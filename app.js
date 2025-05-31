@@ -11,7 +11,7 @@ const swaggerSpec = require('./swagger/swagger');
 connectDB();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5500;
 
 // Middleware for parsing JSON bodies
 app.use(express.json());
