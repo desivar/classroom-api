@@ -13,6 +13,11 @@ const swaggerDefinition = {
             url: 'http://localhost:5500',
             description: 'Development server',
         },
+        {
+            // Add your actual Render URL here
+            url: 'https://classroom-api-edrf.onrender.com', // <--- Add this to have two optiosn n scroll down
+            description: 'Render Deployment Server',
+        },
     ],
     components: {
         schemas: {
