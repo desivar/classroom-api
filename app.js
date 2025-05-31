@@ -1,6 +1,6 @@
 // app.js
+require('dotenv').config(); // Loads environment variables into process.env
 const express = require('express');
-const dotenv = require('dotenv').config();
 const connectDB = require('./config/db');
 const teacherRoutes = require('./routes/teacherRoutes');
 const studentRoutes = require('./routes/studentRoutes');
