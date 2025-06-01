@@ -1,7 +1,9 @@
 // routes/studentRoutes.js - These are your Routes
 const express = require('express');
-const { getStudents, getStudentById } = require('../controllers/studentController'); // Imports Controller functions
 const router = express.Router();
+// CORRECTED LINE: Import all functions from the controller using destructuring
+const { getStudents, getStudentById, createStudent, updateStudent, deleteStudent } = require('../controllers/studentController');
+
 
 /**
  * @swagger
