@@ -39,22 +39,28 @@ const swaggerDefinition = {
                 },
                 example: { /* ... example data ... */ }
             },
-            Student: {
-                type: 'object',
-                required: ['name', 'email', 'teacher'],
-                properties: {
-                    _id: { type: 'string' },
-                    name: { type: 'string' },
-                    email: { type: 'string', format: 'email' },
-                    teacher: { type: 'string' }, // Can be an object when populated
-                    dateOfBirth: { type: 'string', format: 'date' },
-                    createdAt: { type: 'string', format: 'date-time' },
-                    updatedAt: { type: 'string', format: 'date-time' },
-                },
-                example: { /* ... example data ... */ }
+           Student: {
+    type: 'object',
+    required: ['name', 'email', 'teacher', 'dateOfBirth'], // Include dateOfBirth if needed
+    properties: {
+        _id: { type: 'string' },
+        name: { type: 'string' },
+        email: { type: 'string', format: 'email' },
+        teacher: { type: 'string' }, // Can be an object when populated
+        dateOfBirth: { type: 'string', format: 'date-time' }, // Use date-time format for consistency
+        createdAt: { type: 'string', format: 'date-time' },
+        updatedAt: { type: 'string', format: 'date-time' },
+    },
+    example: {
+        name: "Candy Loom",
+        email: "candlo@example.com",
+        teacher: "683af42300684df9ce7efdbc",
+        dateOfBirth: "2009-06-20T00:00:00Z"
+    }
+}
             },
         },
-    },
+
 };
 
 const options = {
