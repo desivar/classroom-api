@@ -6,7 +6,7 @@ const swaggerDefinition = {
     info: {
         title: 'Classroom API',
         version: '1.0.0',
-        description: 'API for managing teachers and students in a classroom system, including CRUD operations.',
+        description: 'API for managing teachers and students in a classroom system, including CRUD operations (Part 1).',
     },
     servers: [
         {
@@ -22,7 +22,7 @@ const swaggerDefinition = {
         schemas: {
             Teacher: {
                 type: 'object',
-                // _id is required for the full object returned
+                // Added _id to required as it's part of the full object returned
                 required: ['_id', 'name', 'email', 'phone', 'subjectsTaught', 'employeeId'],
                 properties: {
                     _id: { type: 'string', description: 'Unique identifier for the teacher' },
@@ -57,33 +57,60 @@ const swaggerDefinition = {
             },
             Student: {
                 type: 'object',
-                // For the full Student object (as returned by GET requests), _id, name, email, teacher (ID or populated object) are usually present
-                // We'll define 'teacher' as a string here for simplicity in the base schema,
-                // and for GET responses where it's populated, Swagger will show the populated object
-                required: ['_id', 'name', 'email', 'teacher'], // teacher ID will be required here
+                // _id should be required for the full Student object that's returned
+                required: ['_id', 'name', 'email', 'teacher', 'dateOfBirth'], // RE-ADDED dateOfBirth
                 properties: {
                     _id: { type: 'string', description: 'Unique identifier for the student' },
-                    name: { type: 'string', example: 'Lulu Doe' },
-                    email: { type: 'string', format: 'email', example: 'lulu.doe@example.com' },
-                    // When *sent* (input) it's a string ID. When *returned* (output/populated), it can be an object.
-                    // For the base schema, it's simplest to define the ID type here.
-                    // The routes will specify if the request body schema needs a different structure.
-                    teacher: { type: 'string', description: 'ID of the assigned teacher', example: '683af42300684df9ce7efdbc' },
-                    // dateOfBirth removed
+                    name: { type: 'string', example: 'Candy Loom' },
+                    email: { type: 'string', format: 'email', example: 'candlo@example.com' },
+                    // When populated, 'teacher' will be an object.
+                    // For consistency with raw data (before populate) or if not populated, it's a string (ID).
+                    // We model it as an object here for reflecting a populated response,
+                    // but the StudentInput will use a string.
+                    teacher: {
+                        type: 'object',
+                        description: 'Teacher object (populated) or Teacher ID (unpopulated)',
+                        properties: {
+                            _id: { type: 'string', example: '683af42300684df9ce7efdbc' },
+                            name: { type: 'string', example: 'John Doe' },
+                            email: { type: 'string', format: 'email', example: 'john.doe@example.com' }
+                        }
+                    },
+                    dateOfBirth: { type: 'string', format: 'date-time', example: '2009-06-20T00:00:00Z' }, // RE-ADDED dateOfBirth
                     createdAt: { type: 'string', format: 'date-time', description: 'Timestamp when the student was created' },
                     updatedAt: { type: 'string', format: 'date-time', description: 'Timestamp when the student was last updated' },
                 },
                 example: {
                     _id: '60c72b2f9b1d8e001c8a1b2c',
-                    name: 'Lulu Doe',
-                    email: 'lulu.doe@example.com',
-                    teacher: '683af42300684df9ce7efdbc', // Example of teacher ID, before populate
-                    // dateOfBirth removed
+                    name: 'Candy Loom',
+                    email: 'candlo@example.com',
+                    teacher: { // Example of populated teacher
+                        _id: '683af42300684df9ce7efdbc',
+                        name: 'John Doe',
+                        email: 'john.doe@example.com'
+                    },
+                    dateOfBirth: '2009-06-20T00:00:00Z',
                     createdAt: '2023-01-15T10:00:00Z',
                     updatedAt: '2023-01-15T10:00:00Z'
                 }
             },
-            // TeacherInput schema - if you only need name, email, phone, subjectsTaught, employeeId
+            // RE-ADDED: StudentInput schema for POST and PUT requests
+            StudentInput: {
+                type: 'object',
+                required: ['name', 'email', 'teacher', 'dateOfBirth'],
+                properties: {
+                    name: { type: 'string', example: 'Candy Loom' },
+                    email: { type: 'string', format: 'email', example: 'candlo@example.com' },
+                    teacher: { type: 'string', description: 'ID of the assigned teacher', example: '683af42300684df9ce7efdbc' },
+                    dateOfBirth: { type: 'string', format: 'date-time', example: '2009-06-20T00:00:00Z' }
+                },
+                example: {
+                    name: 'Candy Loom',
+                    email: 'candlo@example.com',
+                    teacher: '683af42300684df9ce7efdbc',
+                    dateOfBirth: '2009-06-20T00:00:00Z'
+                }
+            },
             TeacherInput: {
                 type: 'object',
                 required: ['name', 'email', 'phone', 'subjectsTaught', 'employeeId'],
