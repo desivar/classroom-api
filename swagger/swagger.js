@@ -14,8 +14,7 @@ const swaggerDefinition = {
             description: 'Development server',
         },
         {
-            // Add your actual Render URL here
-            url: 'https://classroom-api-edrf.onrender.com', // <--- Add this to have two optiosn n scroll down
+            url: 'https://classroom-api-edrf.onrender.com',
             description: 'Render Deployment Server',
         },
     ],
@@ -23,44 +22,126 @@ const swaggerDefinition = {
         schemas: {
             Teacher: {
                 type: 'object',
+                // Added _id to required as it's part of the full object returned
+                required: ['_id', 'name', 'email', 'phone', 'subjectsTaught', 'employeeId'],
+                properties: {
+                    _id: { type: 'string', description: 'Unique identifier for the teacher' },
+                    name: { type: 'string', example: 'John Doe' },
+                    email: { type: 'string', format: 'email', example: 'john.doe@example.com' },
+                    phone: { type: 'string', example: '+15551234567' },
+                    address: { type: 'string', example: '123 Main St, Anytown, USA' },
+                    hireDate: { type: 'string', format: 'date', example: '2020-09-01' },
+                    isActive: { type: 'boolean', example: true },
+                    subjectsTaught: {
+                        type: 'array',
+                        items: { type: 'string' },
+                        example: ['Mathematics', 'Physics']
+                    },
+                    employeeId: { type: 'string', example: 'EMP001' },
+                    createdAt: { type: 'string', format: 'date-time', description: 'Timestamp when the teacher was created' },
+                    updatedAt: { type: 'string', format: 'date-time', description: 'Timestamp when the teacher was last updated' },
+                },
+                example: {
+                    _id: '60c72b2f9b1d8e001c8a1b2a',
+                    name: 'John Doe',
+                    email: 'john.doe@example.com',
+                    phone: '+15551234567',
+                    address: '123 Main St, Anytown, USA',
+                    hireDate: '2020-09-01',
+                    isActive: true,
+                    subjectsTaught: ['Mathematics', 'Physics'],
+                    employeeId: 'EMP001',
+                    createdAt: '2023-01-15T10:00:00Z',
+                    updatedAt: '2023-01-15T10:00:00Z'
+                }
+            },
+            Student: {
+                type: 'object',
+                // _id should be required for the full Student object that's returned
+                required: ['_id', 'name', 'email', 'teacher', 'dateOfBirth'],
+                properties: {
+                    _id: { type: 'string', description: 'Unique identifier for the student' },
+                    name: { type: 'string', example: 'Candy Loom' },
+                    email: { type: 'string', format: 'email', example: 'candlo@example.com' },
+                    // When populated, 'teacher' will be an object.
+                    // For consistency with raw data (before populate) or if not populated, it's a string (ID).
+                    // We can model it as an object for the full response, or a string for just the ID.
+                    // Let's make it a general object for now, reflecting a populated response.
+                    teacher: {
+                        type: 'object',
+                        description: 'Teacher object (populated) or Teacher ID (unpopulated)',
+                        properties: {
+                            _id: { type: 'string', example: '683af42300684df9ce7efdbc' },
+                            name: { type: 'string', example: 'John Doe' },
+                            email: { type: 'string', format: 'email', example: 'john.doe@example.com' }
+                        }
+                    },
+                    dateOfBirth: { type: 'string', format: 'date-time', example: '2009-06-20T00:00:00Z' },
+                    createdAt: { type: 'string', format: 'date-time', description: 'Timestamp when the student was created' },
+                    updatedAt: { type: 'string', format: 'date-time', description: 'Timestamp when the student was last updated' },
+                },
+                example: {
+                    _id: '60c72b2f9b1d8e001c8a1b2c',
+                    name: 'Candy Loom',
+                    email: 'candlo@example.com',
+                    teacher: { // Example of populated teacher
+                        _id: '683af42300684df9ce7efdbc',
+                        name: 'John Doe',
+                        email: 'john.doe@example.com'
+                    },
+                    dateOfBirth: '2009-06-20T00:00:00Z',
+                    createdAt: '2023-01-15T10:00:00Z',
+                    updatedAt: '2023-01-15T10:00:00Z'
+                }
+            },
+            // NEW: Define StudentInput schema for POST and PUT requests
+            StudentInput: {
+                type: 'object',
+                required: ['name', 'email', 'teacher', 'dateOfBirth'],
+                properties: {
+                    name: { type: 'string', example: 'Candy Loom' },
+                    email: { type: 'string', format: 'email', example: 'candlo@example.com' },
+                    teacher: { type: 'string', description: 'ID of the assigned teacher', example: '683af42300684df9ce7efdbc' },
+                    dateOfBirth: { type: 'string', format: 'date-time', example: '2009-06-20T00:00:00Z' }
+                },
+                example: {
+                    name: 'Candy Loom',
+                    email: 'candlo@example.com',
+                    teacher: '683af42300684df9ce7efdbc',
+                    dateOfBirth: '2009-06-20T00:00:00Z'
+                }
+            },
+            // You might also consider a TeacherInput schema if it differs from the full Teacher model
+            TeacherInput: {
+                type: 'object',
                 required: ['name', 'email', 'phone', 'subjectsTaught', 'employeeId'],
                 properties: {
-                    _id: { type: 'string' },
-                    name: { type: 'string' },
-                    email: { type: 'string', format: 'email' },
-                    phone: { type: 'string' },
-                    address: { type: 'string' },
-                    hireDate: { type: 'string', format: 'date' },
-                    isActive: { type: 'boolean' },
-                    subjectsTaught: { type: 'array', items: { type: 'string' } },
-                    employeeId: { type: 'string' },
-                    createdAt: { type: 'string', format: 'date-time' },
-                    updatedAt: { type: 'string', format: 'date-time' },
+                    name: { type: 'string', example: 'Jane Smith' },
+                    email: { type: 'string', format: 'email', example: 'jane.smith@example.com' },
+                    phone: { type: 'string', example: '+15559876543' },
+                    address: { type: 'string', example: '456 Oak Ave, Othertown, USA' },
+                    hireDate: { type: 'string', format: 'date', example: '2021-03-01' },
+                    isActive: { type: 'boolean', example: true },
+                    subjectsTaught: {
+                        type: 'array',
+                        items: { type: 'string' },
+                        example: ['Chemistry', 'Biology']
+                    },
+                    employeeId: { type: 'string', example: 'EMP002' },
                 },
-                example: { /* ... example data ... */ }
-            },
-           Student: {
-    type: 'object',
-    required: ['name', 'email', 'teacher', 'dateOfBirth'], // Include dateOfBirth if needed
-    properties: {
-        _id: { type: 'string' },
-        name: { type: 'string' },
-        email: { type: 'string', format: 'email' },
-        teacher: { type: 'string' }, // Can be an object when populated
-        dateOfBirth: { type: 'string', format: 'date-time' }, // Use date-time format for consistency
-        createdAt: { type: 'string', format: 'date-time' },
-        updatedAt: { type: 'string', format: 'date-time' },
-    },
-    example: {
-        name: "Candy Loom",
-        email: "candlo@example.com",
-        teacher: "683af42300684df9ce7efdbc",
-        dateOfBirth: "2009-06-20T00:00:00Z"
-    }
-}
-            },
+                example: {
+                    name: 'Jane Smith',
+                    email: 'jane.smith@example.com',
+                    phone: '+15559876543',
+                    address: '456 Oak Ave, Othertown, USA',
+                    hireDate: '2021-03-01',
+                    isActive: true,
+                    subjectsTaught: ['Chemistry', 'Biology'],
+                    employeeId: 'EMP002'
+                }
+            }
         },
-
+    },
 };
 
 const options = {

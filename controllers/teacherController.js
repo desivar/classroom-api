@@ -39,8 +39,10 @@ const getTeacherById = async (req, res) => {
 // @access  Public
 const createTeacher = async (req, res) => {
     try {
+        // Destructure all expected fields from the TeacherInput schema
+        const { name, email, phone, subjectsTaught, employeeId, address, hireDate, isActive } = req.body;
+
         // Basic Validation: Check if required fields are present
-        const { name, email, phone, subjectsTaught, employeeId } = req.body;
         if (!name || !email || !phone || !subjectsTaught || !employeeId) {
             return res.status(400).json({ message: 'Please provide all required fields: name, email, phone, subjectsTaught, employeeId' });
         }
@@ -49,9 +51,9 @@ const createTeacher = async (req, res) => {
             name,
             email,
             phone,
-            address: req.body.address,
-            hireDate: req.body.hireDate,
-            isActive: req.body.isActive,
+            address, // Include optional fields directly
+            hireDate, // Include optional fields directly
+            isActive, // Include optional fields directly
             subjectsTaught,
             employeeId,
         });
@@ -62,7 +64,12 @@ const createTeacher = async (req, res) => {
         console.error('Error in createTeacher:', error.message);
         // Handle Mongoose validation errors (e.g., unique fields, schema type errors)
         if (error.name === 'ValidationError') {
-            res.status(400).json({ message: error.message });
+            // Provide more specific validation messages if possible, or just the error.message from Mongoose
+            const errors = {};
+            for (const field in error.errors) {
+                errors[field] = error.errors[field].message;
+            }
+            res.status(400).json({ message: 'Validation failed', errors });
         } else {
             res.status(500).json({ message: 'Server error creating teacher' });
         }
@@ -75,18 +82,20 @@ const createTeacher = async (req, res) => {
 const updateTeacher = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, email, phone, subjectsTaught, employeeId } = req.body;
+        // You can choose to destructure specific fields or pass req.body directly.
+        // Passing req.body directly relies on Mongoose schema validation for consistency.
+        // The current 'if' condition below is robust enough.
 
-        // Basic Validation for update: At least one field to update should be present,
-        // and required fields if they are explicitly being updated.
-        if (!name && !email && !phone && !subjectsTaught && !employeeId && !req.body.address && !req.body.hireDate && req.body.isActive === undefined) {
+        // Basic Validation for update: At least one field to update should be present
+        // This check ensures that the request body is not empty.
+        if (Object.keys(req.body).length === 0) {
              return res.status(400).json({ message: 'No fields provided for update.' });
         }
-        // More robust validation would check format of each field if provided
 
+        // Mongoose will apply schema validation to req.body based on your Teacher model
         const updatedTeacher = await Teacher.findByIdAndUpdate(
             id,
-            req.body, // Mongoose will apply schema validation to this
+            req.body,
             { new: true, runValidators: true } // `new: true` returns the updated doc; `runValidators: true` runs schema validators on update
         );
 
@@ -98,10 +107,20 @@ const updateTeacher = async (req, res) => {
     } catch (error) {
         console.error('Error in updateTeacher:', error.message);
         if (error.name === 'CastError') {
-            return res.status(400).json({ message: 'Invalid Teacher ID' });
+            // Check if it's a CastError for the ID itself
+            if (error.path === '_id') {
+                return res.status(400).json({ message: 'Invalid Teacher ID format' });
+            }
+            // Add checks for other fields if they could cause CastError (e.g., if you had a number field and sent a string)
+            return res.status(400).json({ message: 'Invalid data format for update' });
         }
         if (error.name === 'ValidationError') {
-            res.status(400).json({ message: error.message });
+            // Provide more specific validation messages if possible
+            const errors = {};
+            for (const field in error.errors) {
+                errors[field] = error.errors[field].message;
+            }
+            res.status(400).json({ message: 'Validation failed', errors });
         } else {
             res.status(500).json({ message: 'Server error updating teacher' });
         }
@@ -134,7 +153,7 @@ const deleteTeacher = async (req, res) => {
 module.exports = {
     getTeachers,
     getTeacherById,
-    createTeacher, // Export the new functions
+    createTeacher,
     updateTeacher,
     deleteTeacher,
 };

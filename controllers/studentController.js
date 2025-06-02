@@ -41,10 +41,13 @@ const getStudentById = async (req, res) => {
 // @access  Public
 const createStudent = async (req, res) => {
     try {
+        // Destructure only the fields expected by the StudentInput schema
+        // based on your studentRoutes.js and implied schema: name, email, teacher, dateOfBirth
+        const { name, email, teacher, dateOfBirth } = req.body;
+
         // Basic Validation: Check if required fields are present
-        const { firstName, lastName, email, major, teacher, enrollmentDate } = req.body;
-        if (!firstName || !lastName || !email || !major || !teacher || !enrollmentDate) {
-            return res.status(400).json({ message: 'Please provide all required fields: firstName, lastName, email, major, teacher (ID), enrollmentDate' });
+        if (!name || !email || !teacher || !dateOfBirth) {
+            return res.status(400).json({ message: 'Please provide all required fields: name, email, teacher (ID), dateOfBirth' });
         }
 
         // Validate if the provided teacher ID actually exists
@@ -54,26 +57,23 @@ const createStudent = async (req, res) => {
         }
 
         const newStudent = new Student({
-            firstName,
-            lastName,
+            name,
             email,
-            phone: req.body.phone,
-            address: req.body.address,
-            major,
-            enrollmentDate,
-            courses: req.body.courses,
-            gpa: req.body.gpa,
-            isFullTime: req.body.isFullTime,
             teacher, // Assign the teacher ID
+            dateOfBirth, // Ensure dateOfBirth is included from the request body
+            // If you have a 'courses' field and it's optional on creation,
+            // you might still want to include it if provided:
+            // courses: req.body.courses || [],
         });
 
         const savedStudent = await newStudent.save();
-        // Populate the teacher field in the response
+        // Populate the teacher field in the response for a complete student object
         await savedStudent.populate('teacher', 'name email');
         res.status(201).json(savedStudent); // 201 Created
     } catch (error) {
         console.error('Error in createStudent:', error.message);
         if (error.name === 'ValidationError') {
+            // Mongoose validation errors for schema fields
             res.status(400).json({ message: error.message });
         } else if (error.name === 'CastError' && error.path === 'teacher') {
             res.status(400).json({ message: 'Invalid teacher ID format' });
@@ -89,7 +89,12 @@ const createStudent = async (req, res) => {
 const updateStudent = async (req, res) => {
     try {
         const { id } = req.params;
-        const { teacher } = req.body;
+        const { teacher } = req.body; // Extract teacher specifically for validation
+
+        // Basic validation for update: At least one field to update should be present
+        if (Object.keys(req.body).length === 0) {
+            return res.status(400).json({ message: 'No fields provided for update.' });
+        }
 
         // Optional: If teacher ID is being updated, validate its existence
         if (teacher) {
@@ -98,12 +103,6 @@ const updateStudent = async (req, res) => {
                 return res.status(400).json({ message: 'Provided teacher ID does not exist' });
             }
         }
-        
-        // Basic validation for update: At least one field to update should be present
-        if (Object.keys(req.body).length === 0) {
-            return res.status(400).json({ message: 'No fields provided for update.' });
-        }
-
 
         const updatedStudent = await Student.findByIdAndUpdate(
             id,
@@ -127,6 +126,7 @@ const updateStudent = async (req, res) => {
             }
         }
         if (error.name === 'ValidationError') {
+            // Mongoose validation errors for schema fields
             res.status(400).json({ message: error.message });
         } else {
             res.status(500).json({ message: 'Server error updating student' });
@@ -141,7 +141,8 @@ const deleteStudent = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const deletedStudent = await Student.findByIdAndDelete(id);
+        // Populate the deleted student to return consistent data with GET requests
+        const deletedStudent = await Student.findByIdAndDelete(id).populate('teacher', 'name email');
 
         if (!deletedStudent) {
             return res.status(404).json({ message: 'Student not found' });
@@ -161,7 +162,7 @@ const deleteStudent = async (req, res) => {
 module.exports = {
     getStudents,
     getStudentById,
-    createStudent, // Export the new functions
+    createStudent,
     updateStudent,
     deleteStudent,
 };
