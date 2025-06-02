@@ -23,7 +23,7 @@ const studentSchema = mongoose.Schema({
     },
     dateOfBirth: {
         type: Date,
-        required: false,
+        required: [true, 'Please add a date of birth'], // CHANGED: Set to required: true for consistency
     }
 }, {
     timestamps: true,

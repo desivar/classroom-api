@@ -22,14 +22,16 @@ const teacherSchema = mongoose.Schema({
     },
     address: {
         type: String,
-        required: false,
+        required: false, // Explicitly false, consistent with TeacherInput being optional
     },
     hireDate: {
         type: Date,
+        required: false, // Explicitly false, consistent with TeacherInput being optional (default is handled by Mongoose)
         default: Date.now,
     },
     isActive: {
         type: Boolean,
+        required: false, // Explicitly false, consistent with TeacherInput being optional (default is handled by Mongoose)
         default: true,
     },
     subjectsTaught: {
@@ -42,7 +44,7 @@ const teacherSchema = mongoose.Schema({
         unique: true,
     },
 }, {
-    timestamps: true,
+    timestamps: true, // Automatically adds createdAt and updatedAt fields
 });
 
 module.exports = mongoose.model('Teacher', teacherSchema);
