@@ -14,16 +14,18 @@ Authentication with JWT
 git clone https://github.com/your-repo/classroom-api.git
 cd classroom-api
 npm install
+
 ⚙️ Configuration
 Create a .env file in the root directory with:
 MONGO_URI=your_database_connection_string
 JWT_SECRET=your_jwt_secret_key
 PORT=5000
+
 🚀 Running the Server
 npm start
 OR with Nodemon:
 npm run dev
-📖 API Endpoints Table
+
 ## 📖 API Endpoints
 
 | Method   | Endpoint         | Description              | Authentication |
@@ -37,6 +39,7 @@ npm run dev
 🛠 Swagger Documentation
 Swagger is integrated for API documentation. Run the server and visit:
 http://localhost:5000/api-docs
+
 🛡 Authentication
 This API uses JWT authentication. Include a Bearer Token in requests that require authentication.
 
