@@ -6,7 +6,7 @@ const swaggerDefinition = {
     info: {
         title: 'Classroom API',
         version: '1.0.0',
-        description: 'API for managing teachers and students in a classroom system, including CRUD operations (Part 1).',
+        description: 'API for managing teachers and students in a classroom system, including CRUD operations, Auth/github (Part 2).',
     },
     servers: [
         {
