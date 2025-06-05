@@ -7,6 +7,7 @@ const studentRoutes = require('./routes/studentRoutes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swagger/swagger');
 const passport = require('passport');
+const session = require('express-session');
 
 // Connect to MongoDB
 connectDB();
