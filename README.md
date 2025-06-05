@@ -24,12 +24,16 @@ npm start
 OR with Nodemon:
 npm run dev
 📖 API Endpoints Table
-Method	Endpoint	Description	Authentication
-POST	/students	Add a new student	✅ Required
-GET	/students	Get all students	❌ Not required
-PUT	/students/:id	Update student info	✅ Required
-DELETE	/students/:id	Remove a student	✅ Required
-POST	/assignments	Create an assignment	✅ Required
+## 📖 API Endpoints
+
+| Method   | Endpoint         | Description              | Authentication |
+|----------|-----------------|--------------------------|---------------|
+| `POST`   | `/students`      | Add a new student        | ✅ Required   |
+| `GET`    | `/students`      | Get all students         | ❌ Not required |
+| `PUT`    | `/students/:id`  | Update student info      | ✅ Required   |
+| `DELETE` | `/students/:id`  | Remove a student        | ✅ Required   |
+| `POST`   | `/assignments`   | Create an assignment     | ✅ Required   |
+
 🛠 Swagger Documentation
 Swagger is integrated for API documentation. Run the server and visit:
 http://localhost:5000/api-docs
