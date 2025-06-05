@@ -1,4 +1,4 @@
-/// app.js
+// app.js
 require('dotenv').config(); // Loads environment variables into process.env
 const express = require('express');
 const connectDB = require('./config/db'); // Assuming this connects to MongoDB
@@ -12,11 +12,27 @@ const GithubStrategy = require('passport-github2').Strategy;
 const User = require('./models/User'); // Import the new User model
 const isAuthenticated = require('./middleware/authMiddleware'); // Import the new middleware
 
+// --- NEW: Import cors package ---
+const cors = require('cors');
+
 // Connect to MongoDB
 connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5500;
+
+// --- NEW: CORS Configuration ---
+// For development, allowing all origins is often sufficient, but for production,
+// you should restrict it to your frontend's domain(s).
+const corsOptions = {
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000', // Allow your frontend origin
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true, // Allow cookies to be sent with requests
+    optionsSuccessStatus: 204 // Some legacy browsers (IE11, various SmartTVs) choke on 200
+};
+app.use(cors(corsOptions));
+// --- END NEW CORS Configuration ---
+
 
 // Middleware for parsing JSON bodies
 app.use(express.json());
@@ -30,8 +46,9 @@ app.use(session({
     saveUninitialized: false, // Don't create session until something stored
     cookie: {
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-        httpOnly: true // Prevent client-side JS from reading the cookie
+        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production (https)
+        httpOnly: true, // Prevent client-side JS from reading the cookie
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' for cross-site with secure, 'lax' for same-site
     }
 }));
 
@@ -65,13 +82,11 @@ async (accessToken, refreshToken, profile, done) => {
 }));
 
 // Serialize user into the session
-// This is called once during login after the strategy successfully authenticates a user.
 passport.serializeUser((user, done) => {
     done(null, user.id); // Store only the user's MongoDB _id in the session
 });
 
 // Deserialize user from the session
-// This is called on subsequent requests to retrieve the user object from the database using the stored ID.
 passport.deserializeUser(async (id, done) => {
     try {
         const user = await User.findById(id);
@@ -89,18 +104,19 @@ app.get('/auth/github',
 app.get('/auth/github/callback',
     passport.authenticate('github', { failureRedirect: '/login-failure' }),
     function(req, res) {
-        // Successful authentication, redirect to a dashboard or success page.
-        res.redirect('/profile'); // Example: Redirect to a protected profile page
+        // Successful authentication, redirect to your frontend dashboard
+        // Make sure this URL matches your frontend's actual URL
+        res.redirect(process.env.FRONTEND_SUCCESS_REDIRECT_URL || 'http://localhost:3000/dashboard');
     });
 
 // Route for login failure
 app.get('/login-failure', (req, res) => {
-    res.status(401).send('GitHub authentication failed. Please try again.');
+    // Redirect to a failure page on your frontend
+    res.redirect(process.env.FRONTEND_FAILURE_REDIRECT_URL || 'http://localhost:3000/login?status=failed');
 });
 
 // Example of a protected route
 app.get('/profile', isAuthenticated, (req, res) => {
-    // req.user is available here because of deserializeUser
     res.json({
         message: 'Welcome to your protected profile!',
         user: req.user,
@@ -112,22 +128,22 @@ app.get('/profile', isAuthenticated, (req, res) => {
 app.get('/logout', (req, res, next) => {
     req.logout((err) => {
         if (err) { return next(err); }
-        req.session.destroy((err) => { // Destroy the session completely
+        req.session.destroy((err) => {
             if (err) {
                 console.error('Error destroying session:', err);
                 return res.status(500).json({ message: 'Error logging out.' });
             }
             res.clearCookie('connect.sid'); // Clear the session cookie
             res.json({ message: 'Logged out successfully.' });
+            // Optionally, redirect to a frontend page after successful logout
+            // res.redirect(process.env.FRONTEND_LOGOUT_REDIRECT_URL || 'http://localhost:3000/login');
         });
     });
 });
 
 // --- API Routes ---
-// Apply isAuthenticated middleware to protect routes globally (all methods)
-// If you only want to protect POST, PUT, DELETE, then apply it in routes/teacherRoutes.js and routes/studentRoutes.js
-app.use('/api/teachers', teacherRoutes); // Routes will handle their own isAuthenticated
-app.use('/api/students', studentRoutes); // Routes will handle their own isAuthenticated
+app.use('/api/teachers', teacherRoutes);
+app.use('/api/students', studentRoutes);
 
 
 // Swagger Documentation Route
