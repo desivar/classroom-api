@@ -1,4 +1,4 @@
-// app.js
+/// app.js
 require('dotenv').config(); // Loads environment variables into process.env
 const express = require('express');
 const connectDB = require('./config/db'); // Assuming this connects to MongoDB
@@ -9,7 +9,8 @@ const swaggerSpec = require('./swagger/swagger');
 const passport = require('passport');
 const session = require('express-session');
 const GithubStrategy = require('passport-github2').Strategy;
-const User = require('./models/User'); // We'll assume a User model for storing authenticated users
+const User = require('./models/User'); // Import the new User model
+const isAuthenticated = require('./middleware/authMiddleware'); // Import the new middleware
 
 // Connect to MongoDB
 connectDB();
@@ -45,8 +46,6 @@ passport.use(new GithubStrategy({
     callbackURL: process.env.GITHUB_CALLBACK_URL || "http://localhost:5500/auth/github/callback"
 },
 async (accessToken, refreshToken, profile, done) => {
-    // In a real application, you would find or create a user in your database
-    // based on the GitHub profile ID.
     try {
         let user = await User.findOne({ githubId: profile.id });
 
@@ -57,7 +56,6 @@ async (accessToken, refreshToken, profile, done) => {
                 username: profile.username,
                 displayName: profile.displayName,
                 email: profile.emails && profile.emails.length > 0 ? profile.emails[0].value : null,
-                // You can save more profile data as needed
             });
         }
         return done(null, user); // Pass the user object to serializeUser
@@ -83,14 +81,6 @@ passport.deserializeUser(async (id, done) => {
     }
 });
 
-// Middleware to check if a user is authenticated
-function isAuthenticated(req, res, next) {
-    if (req.isAuthenticated()) {
-        return next(); // User is authenticated, proceed to the next middleware/route handler
-    }
-    // If not authenticated, send a 401 Unauthorized response
-    res.status(401).json({ message: 'Unauthorized: Please log in to access this resource.' });
-}
 
 // --- Authentication Routes ---
 app.get('/auth/github',
@@ -100,7 +90,6 @@ app.get('/auth/github/callback',
     passport.authenticate('github', { failureRedirect: '/login-failure' }),
     function(req, res) {
         // Successful authentication, redirect to a dashboard or success page.
-        // req.user will contain the authenticated user.
         res.redirect('/profile'); // Example: Redirect to a protected profile page
     });
 
@@ -115,13 +104,12 @@ app.get('/profile', isAuthenticated, (req, res) => {
     res.json({
         message: 'Welcome to your protected profile!',
         user: req.user,
-        sessionId: req.sessionID // Useful for debugging
+        sessionId: req.sessionID
     });
 });
 
 // Logout route
 app.get('/logout', (req, res, next) => {
-    // req.logout requires a callback in newer Passport versions
     req.logout((err) => {
         if (err) { return next(err); }
         req.session.destroy((err) => { // Destroy the session completely
@@ -136,9 +124,10 @@ app.get('/logout', (req, res, next) => {
 });
 
 // --- API Routes ---
-// Apply isAuthenticated middleware to protect write operations
-app.use('/api/teachers', teacherRoutes);
-app.use('/api/students', studentRoutes);
+// Apply isAuthenticated middleware to protect routes globally (all methods)
+// If you only want to protect POST, PUT, DELETE, then apply it in routes/teacherRoutes.js and routes/studentRoutes.js
+app.use('/api/teachers', teacherRoutes); // Routes will handle their own isAuthenticated
+app.use('/api/students', studentRoutes); // Routes will handle their own isAuthenticated
 
 
 // Swagger Documentation Route
@@ -154,26 +143,3 @@ app.listen(PORT, () => {
     console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
     console.log(`GitHub OAuth Login: http://localhost:${PORT}/auth/github`);
 });
-
-// --- User Model (for Passport to store authenticated users) ---
-// Create a new file: models/User.js
-/*
-const mongoose = require('mongoose');
-
-const userSchema = new mongoose.Schema({
-    githubId: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    username: {
-        type: String,
-        required: true
-    },
-    displayName: String,
-    email: String,
-    // Add any other fields you want to store about the user
-}, { timestamps: true });
-
-module.exports = mongoose.model('User', userSchema);
-*/
