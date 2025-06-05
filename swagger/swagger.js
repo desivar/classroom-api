@@ -19,7 +19,17 @@ const swaggerDefinition = {
         },
     ],
     components: {
-        schemas: {
+        // --- START NEW ADDITION FOR SECURITY SCHEMES ---
+        securitySchemes: {
+            cookieAuth: { // Name your security scheme, e.g., 'cookieAuth'
+                type: 'apiKey',
+                in: 'cookie',
+                name: 'connect.sid', // The name of your session cookie
+                description: 'Session cookie for authentication. After logging in via /auth/github, your browser will have this cookie. Swagger UI will automatically send it with "Execute".'
+            }
+        },
+        // --- END NEW ADDITION FOR SECURITY SCHEMES ---
+        schemas: { // Your existing schemas follow after this
             Teacher: {
                 type: 'object',
                 // Added _id to required as it's part of the full object returned
@@ -141,6 +151,13 @@ const swaggerDefinition = {
             }
         },
     },
+    // --- START NEW ADDITION FOR GLOBAL SECURITY ---
+    security: [
+      {
+        cookieAuth: [] // Refer to the security scheme by its name
+      }
+    ]
+    // --- END NEW ADDITION FOR GLOBAL SECURITY ---
 };
 
 const options = {
