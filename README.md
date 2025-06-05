@@ -23,7 +23,7 @@ PORT=5000
 npm start
 OR with Nodemon:
 npm run dev
-📖 API Endpoints
+📖 API Endpoints Table
 Method	Endpoint	Description	Authentication
 POST	/students	Add a new student	✅ Required
 GET	/students	Get all students	❌ Not required
