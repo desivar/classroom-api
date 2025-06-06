@@ -96,6 +96,13 @@ passport.deserializeUser(async (id, done) => {
     }
 });
 
+app.get('/debug-session', (req, res) => {
+    res.json({
+        session: req.session,
+        user: req.user,
+        sessionID: req.sessionID
+    });
+});
 
 // --- Authentication Routes ---
 app.get('/auth/github',
