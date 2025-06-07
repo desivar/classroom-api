@@ -25,7 +25,7 @@ const PORT = process.env.PORT || 5500;
 // For development, allowing all origins is often sufficient, but for production,
 // you should restrict it to your frontend's domain(s).
 const corsOptions = {
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000', // Allow your frontend origin
+    origin: process.env.FRONTEND_URL || 'http://localhost:5500', // Allow your frontend origin
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // Allow cookies to be sent with requests
     optionsSuccessStatus: 204 // Some legacy browsers (IE11, various SmartTVs) choke on 200
@@ -113,7 +113,7 @@ app.get('/auth/github/callback',
     function(req, res) {
         // Successful authentication, redirect to your frontend dashboard
         // Make sure this URL matches your frontend's actual URL
-        res.redirect(process.env.FRONTEND_SUCCESS_REDIRECT_URL || 'http://localhost:3000/dashboard');
+        res.redirect(process.env.FRONTEND_SUCCESS_REDIRECT_URL || 'http://localhost:5500/dashboard');
     });
 
 // Route for login failure
@@ -143,7 +143,7 @@ app.get('/logout', (req, res, next) => {
             res.clearCookie('connect.sid'); // Clear the session cookie
             res.json({ message: 'Logged out successfully.' });
             // Optionally, redirect to a frontend page after successful logout
-            // res.redirect(process.env.FRONTEND_LOGOUT_REDIRECT_URL || 'http://localhost:3000/login');
+            // res.redirect(process.env.FRONTEND_LOGOUT_REDIRECT_URL || 'http://localhost:5500/login');
         });
     });
 });
